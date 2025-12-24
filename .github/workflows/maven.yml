@@ -32,7 +32,7 @@ jobs:
     - name: Build & push Docker image
       uses: mr-smithers-excellent/docker-build-push@v6
       with:
-       image: /kerfaiyassine/vehicule-rental-docker-image
+       image: kerfaiyassine/vehicule-rental-docker-image
        tags: v1
        registry: docker.io
        dockerfile: Dockerfile
