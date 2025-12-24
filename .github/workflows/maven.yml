@@ -33,7 +33,7 @@ jobs:
       uses: mr-smithers-excellent/docker-build-push@v6
       with:
        image: /kerfaiyassine/vehicule-rental-docker-image
-       tags: latest
+       tags: v1
        registry: docker.io
        dockerfile: Dockerfile
        username: ${{ secrets.DOCKER_USERNAME }}
