@@ -11,6 +11,7 @@ import com.projecttuto.vehicule_rental.services.UserLoginSessionService;
 import com.projecttuto.vehicule_rental.utils.JwtUtils;
 import com.projecttuto.vehicule_rental.utils.RequestUtils;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -32,6 +33,9 @@ public class UserLoginSessionServiceImpl implements UserLoginSessionService {
     private final GeoIpService geoIpService;
     private final BehaviorFeatureService behaviorFeatureService;
     private final AiClient aiClient;
+
+    @Value("${ip.address}")
+    private String ipAddress;
 
     public UserLoginSessionServiceImpl(UserLoginSessionRepository repository,JwtUtils jwtUtils,GeoIpService geoIpService,BehaviorFeatureService behaviorFeatureService,
                                        AiClient aiClient) {
@@ -58,6 +62,9 @@ public class UserLoginSessionServiceImpl implements UserLoginSessionService {
         String ip = RequestUtils.getClientIp(request);
         String ua = RequestUtils.getUserAgent(request);
         GeoLocation geo = geoIpService.resolve(ip);
+        if ("0:0:0:0:0:0:0:1".equals(ip) || "127.0.0.1".equals(ip)) {
+            ip = ipAddress;
+        }
         UserLoginSession session = new UserLoginSession();
         session.setUserId(jwtUtils.userId());
         session.setUsername(jwtUtils.username());
@@ -70,13 +77,10 @@ public class UserLoginSessionServiceImpl implements UserLoginSessionService {
         session.setCity(geo.city());
         List<UserLoginSession> history =
                 userLoginSessionRepository.findUserLoginSessionsByUserId(session.getUserId());
-
         if (!history.isEmpty()) {
             AiBehaviorRequest features =
                     behaviorFeatureService.buildFeatures(session, history);
-
             AiResult ai = aiClient.analyze(features);
-
             session.setRiskScore(ai.riskScore());
             session.setSuspicious(ai.suspicious());
             session.setSuspiciousReason(
