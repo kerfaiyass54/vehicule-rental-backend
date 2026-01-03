@@ -19,7 +19,7 @@ public class GeoIpService {
 
     public GeoIpService() throws IOException {
         InputStream db = new ClassPathResource(
-                "geoip/GeoIP2-City.mmdb"
+                "GeoIP2-City.mmdb"
         ).getInputStream();
 
         reader = new DatabaseReader.Builder(db).build();
