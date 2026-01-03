@@ -3,6 +3,7 @@ package com.projecttuto.vehicule_rental.services;
 import com.projecttuto.vehicule_rental.DTO.SessionDTO;
 import com.projecttuto.vehicule_rental.DTO.UserLoginDataDTO;
 import com.projecttuto.vehicule_rental.entities.UserLoginSession;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.security.oauth2.jwt.Jwt;
 
@@ -12,7 +13,7 @@ import java.util.List;
 
 public interface UserLoginSessionService {
 
-    public void saveSession(Jwt jwt);
+    public void saveSession(HttpServletRequest request);
 
     public List<SessionDTO> findAllUserLoginSessions();
 

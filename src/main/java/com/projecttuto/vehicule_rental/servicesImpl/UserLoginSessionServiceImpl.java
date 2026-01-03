@@ -3,8 +3,14 @@ package com.projecttuto.vehicule_rental.servicesImpl;
 import com.projecttuto.vehicule_rental.DTO.SessionDTO;
 import com.projecttuto.vehicule_rental.DTO.UserLoginDataDTO;
 import com.projecttuto.vehicule_rental.entities.UserLoginSession;
+import com.projecttuto.vehicule_rental.records.AiBehaviorRequest;
+import com.projecttuto.vehicule_rental.records.AiResult;
+import com.projecttuto.vehicule_rental.records.GeoLocation;
 import com.projecttuto.vehicule_rental.repositories.UserLoginSessionRepository;
 import com.projecttuto.vehicule_rental.services.UserLoginSessionService;
+import com.projecttuto.vehicule_rental.utils.JwtUtils;
+import com.projecttuto.vehicule_rental.utils.RequestUtils;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -22,8 +28,18 @@ import java.util.List;
 public class UserLoginSessionServiceImpl implements UserLoginSessionService {
 
     private final UserLoginSessionRepository userLoginSessionRepository;
-    public UserLoginSessionServiceImpl(UserLoginSessionRepository repository) {
+    private final JwtUtils jwtUtils;
+    private final GeoIpService geoIpService;
+    private final BehaviorFeatureService behaviorFeatureService;
+    private final AiClient aiClient;
+
+    public UserLoginSessionServiceImpl(UserLoginSessionRepository repository,JwtUtils jwtUtils,GeoIpService geoIpService,BehaviorFeatureService behaviorFeatureService,
+                                       AiClient aiClient) {
         this.userLoginSessionRepository = repository;
+        this.jwtUtils = jwtUtils;
+        this.geoIpService = geoIpService;
+        this.behaviorFeatureService = behaviorFeatureService;
+        this.aiClient = aiClient;
     }
 
     public SessionDTO mapToDTO(UserLoginSession userLoginSession) {
@@ -37,18 +53,39 @@ public class UserLoginSessionServiceImpl implements UserLoginSessionService {
     }
 
     @Override
-    public void saveSession(Jwt jwt){
-        Long authTimeSeconds = jwt.getClaim("auth_time");
-        Instant authTime = Instant.ofEpochSecond(authTimeSeconds);
-        String userId = jwt.getSubject();
-        if (userLoginSessionRepository.existsByUserIdAndSessionStart(userId, authTime)) {
-            return;
-        }
+    public void saveSession(HttpServletRequest request){
+        Jwt jwt = jwtUtils.getJwt();
+        String ip = RequestUtils.getClientIp(request);
+        String ua = RequestUtils.getUserAgent(request);
+        GeoLocation geo = geoIpService.resolve(ip);
         UserLoginSession session = new UserLoginSession();
-        session.setUserId(userId);
-        session.setUsername(jwt.getClaim("preferred_username"));
-        session.setEmail(jwt.getClaim("email"));
-        session.setSessionStart(authTime);
+        session.setUserId(jwtUtils.userId());
+        session.setUsername(jwtUtils.username());
+        session.setEmail(jwtUtils.email());
+        session.setSessionId(jwtUtils.sessionId());
+        session.setSessionStart(Instant.now());
+        session.setIpAddress(ip);
+        session.setUserAgent(ua);
+        session.setCountry(geo.country());
+        session.setCity(geo.city());
+        List<UserLoginSession> history =
+                userLoginSessionRepository.findUserLoginSessionsByUserId(session.getUserId());
+
+        if (!history.isEmpty()) {
+            AiBehaviorRequest features =
+                    behaviorFeatureService.buildFeatures(session, history);
+
+            AiResult ai = aiClient.analyze(features);
+
+            session.setRiskScore(ai.riskScore());
+            session.setSuspicious(ai.suspicious());
+            session.setSuspiciousReason(
+                    ai.suspicious() ? "AI anomaly detected" : null
+            );
+        } else {
+            session.setRiskScore(0.0);
+            session.setSuspicious(false);
+        }
         userLoginSessionRepository.save(session);
     }
 

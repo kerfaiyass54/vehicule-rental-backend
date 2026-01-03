@@ -3,6 +3,7 @@ package com.projecttuto.vehicule_rental.controllers;
 
 import com.projecttuto.vehicule_rental.DTO.SessionDTO;
 import com.projecttuto.vehicule_rental.services.UserLoginSessionService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -25,12 +26,12 @@ public class UserLoginSessionController {
 
 
     @PostMapping("/save")
-    public ResponseEntity<Void> save(@AuthenticationPrincipal Jwt jwt) {
-        service.saveSession(jwt);
+    public ResponseEntity<Void> save(HttpServletRequest request) {
+        service.saveSession(request);
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/{date}/{id}")
+    @GetMapping("/by-date/{date}/{id}")
     public ResponseEntity<List<SessionDTO>> findAllUserLoginSessionsByLoginDate(@PathVariable Instant date, @PathVariable String id){
         List<SessionDTO> sessions = service.findAllUserLoginSessionsByLoginDate(date,id);
         return ResponseEntity.ok().body(sessions);
@@ -42,7 +43,7 @@ public class UserLoginSessionController {
         return ResponseEntity.ok().body(sessions);
     }
 
-    @GetMapping("/{email}")
+    @GetMapping("/by-email/{email}")
     public ResponseEntity<List<SessionDTO>> findAllUserLoginSessionsByLoginDate(@PathVariable String email){
         List<SessionDTO> sessions = service.findAllUserLoginSessionsByEmail(email);
         return ResponseEntity.ok().body(sessions);
