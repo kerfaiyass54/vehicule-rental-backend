@@ -23,7 +23,16 @@ public class UserLoginSession {
     private String userId;
     private String username;
     private String email;
-
+    private String sessionId;
     @Field(type = FieldType.Date)
     private Instant sessionStart;
+    private String ipAddress;
+    private String userAgent;
+    private String deviceType;
+    private String country;
+    private String city;
+    private double riskScore;
+    private boolean suspicious;
+    private String suspiciousReason;
+    private Boolean confirmedByUser;
 }
