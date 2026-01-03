@@ -35,23 +35,34 @@ Welcome to **Vehicle Rental Management System**, a comprehensive backend solutio
 ## ✨ Features
 
 ### **For Admins:**
+
 🔹 Manage users, locations, and system-wide configurations
-🔹 Monitor system health and performance
-🔹 Approve/reject repair and rental requests
 
 ### **For Suppliers:**
+
 🔹 Manage vehicle inventory and categories
+
 🔹 Update vehicle details and availability
+
 🔹 Manage supplier-specific subscriptions and addresses
 
+🔹 Manage all the demands of repairings
+
+
 ### **For Repairers:**
+
 🔹 Handle vehicle maintenance and repairs
+
 🔹 Create and manage repair tickets
+
 🔹 Update repair statuses and send approvals to suppliers
 
 ### **For Clients:**
+
 🔹 Book and manage vehicle rentals
+
 🔹 Track repair statuses of their vehicles
+
 🔹 Manage their subscriptions and rental history
 
 ---
@@ -59,7 +70,7 @@ Welcome to **Vehicle Rental Management System**, a comprehensive backend solutio
 ## 🛠️ Tech Stack
 
 ### **Core Technologies:**
-- **Language:** Java 21
+- **Language:** Java 21, Python
 - **Framework:** Spring Boot 3.3.4
 - **Database:** PostgreSQL 17
 - **Build Tool:** Maven 3.9.9
