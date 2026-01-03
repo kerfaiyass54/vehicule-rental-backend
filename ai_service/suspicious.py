@@ -11,7 +11,6 @@ model = IsolationForest(
     random_state=42
 )
 
-# initial training (replace later with ES data)
 X_train = np.array([
     [1, 1, 14],
     [1, 1, 13],
@@ -27,10 +26,12 @@ class BehaviorRequest(BaseModel):
 @app.post("/predict")
 def predict(req: BehaviorRequest):
     X = np.array([[req.countryCount, req.deviceCount, req.loginHour]])
+
     score = model.decision_function(X)[0]
     anomaly = model.predict(X)[0] == -1
 
     return {
-        "riskScore": float(abs(score)),
-        "suspicious": anomaly
+        "riskScore": float(abs(score)),   # ✅ numpy.float → float
+        "suspicious": bool(anomaly)       # ✅ numpy.bool → bool
     }
+

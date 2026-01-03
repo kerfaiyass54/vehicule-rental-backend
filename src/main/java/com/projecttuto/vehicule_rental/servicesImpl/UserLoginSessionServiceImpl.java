@@ -58,7 +58,13 @@ public class UserLoginSessionServiceImpl implements UserLoginSessionService {
 
     @Override
     public void saveSession(HttpServletRequest request){
-        Jwt jwt = jwtUtils.getJwt();
+
+        String sessionId = jwtUtils.sessionId();
+
+        if (userLoginSessionRepository.existsBySessionId(sessionId)) {
+            return;
+        }
+
         String ip = RequestUtils.getClientIp(request);
         String ua = RequestUtils.getUserAgent(request);
         GeoLocation geo = geoIpService.resolve(ip);
@@ -69,27 +75,22 @@ public class UserLoginSessionServiceImpl implements UserLoginSessionService {
         session.setUserId(jwtUtils.userId());
         session.setUsername(jwtUtils.username());
         session.setEmail(jwtUtils.email());
-        session.setSessionId(jwtUtils.sessionId());
+        session.setSessionId(sessionId);
         session.setSessionStart(Instant.now());
         session.setIpAddress(ip);
         session.setUserAgent(ua);
         session.setCountry(geo.country());
         session.setCity(geo.city());
-        List<UserLoginSession> history =
-                userLoginSessionRepository.findUserLoginSessionsByUserId(session.getUserId());
-        if (!history.isEmpty()) {
-            AiBehaviorRequest features =
-                    behaviorFeatureService.buildFeatures(session, history);
-            AiResult ai = aiClient.analyze(features);
-            session.setRiskScore(ai.riskScore());
-            session.setSuspicious(ai.suspicious());
-            session.setSuspiciousReason(
-                    ai.suspicious() ? "AI anomaly detected" : null
-            );
-        } else {
-            session.setRiskScore(0.0);
-            session.setSuspicious(false);
-        }
+
+        List<UserLoginSession> history = userLoginSessionRepository.findUserLoginSessionsByUserId(session.getUserId());
+
+        AiBehaviorRequest features = behaviorFeatureService.buildFeatures(session, history);
+        AiResult ai = aiClient.analyze(features);
+        session.setRiskScore(ai.riskScore());
+        session.setSuspicious(ai.suspicious());
+        session.setSuspiciousReason(
+                ai.suspicious() ? "AI anomaly detected" : null
+        );
         userLoginSessionRepository.save(session);
     }
 

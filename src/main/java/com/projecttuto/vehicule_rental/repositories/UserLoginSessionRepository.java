@@ -22,6 +22,8 @@ public interface UserLoginSessionRepository extends ElasticsearchRepository<User
 
     List<UserLoginSession> findUserLoginSessionsByUserId(String userId);
 
+    boolean existsBySessionId(String sessionId);
+
 
 
 
