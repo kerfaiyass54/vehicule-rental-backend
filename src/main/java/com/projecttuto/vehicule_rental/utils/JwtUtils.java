@@ -1,4 +1,4 @@
-package com.projecttuto.vehicule_rental.configuration;
+package com.projecttuto.vehicule_rental.utils;
 
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
